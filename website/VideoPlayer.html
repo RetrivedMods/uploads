@@ -1,25 +1,10 @@
-Here's the revised version of your HTML:
-
-### Changes:
-1. **Removed Thunderlinks Script**:
-   - Eliminated the `<script src="//thunderlinks.site/js/full-page-script.js">` and related references.
-   
-2. **Added Informative Blog**:
-   - Included a structured and visually appealing blog section after the video player.
-
-3. **Ad Overlay**:
-   - The ad overlay is displayed only when the video is played and can be skipped after 5 seconds.
-
-Here’s the updated code:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player with Blog</title>
+    <title>Video Player</title>
 
     <!-- Video.js CSS -->
     <link href="//vjs.zencdn.net/8.3.0/video-js.min.css" rel="stylesheet">
@@ -41,48 +26,6 @@ Here’s the updated code:
             max-width: 900px;
             position: relative;
             margin-top: 20px;
-        }
-
-        .buttons-container {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .ad-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 10;
-            display: none;
-        }
-
-        .ad-overlay p {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-
-        .ad-overlay button {
-            background-color: #e50914;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .ad-overlay button:hover {
-            background-color: #b20710;
         }
 
         .blog-container {
@@ -128,12 +71,6 @@ Here’s the updated code:
                 </a>
             </p>
         </video>
-
-        <!-- Ad Overlay -->
-        <div class="ad-overlay" id="ad-overlay">
-            <p>Ad is playing... Please wait 5 seconds to skip.</p>
-            <button id="skip-ad-button" disabled>Skip Ad</button>
-        </div>
     </div>
 
     <div class="blog-container">
@@ -153,35 +90,9 @@ Here’s the updated code:
 
     <script>
         const downloadUrl = (new URL(window.location.href)).searchParams.get('url');
-        const adOverlay = document.getElementById('ad-overlay');
-        const skipAdButton = document.getElementById('skip-ad-button');
-        const videoElement = document.getElementById('my-player');
 
-        // Set video source
+        // Set video source from URL parameter
         document.getElementById('video-src').src = downloadUrl;
-
-        // Show ad on video play
-        videoElement.addEventListener('play', () => {
-            videoElement.pause();
-            adOverlay.style.display = 'flex';
-            let secondsRemaining = 5;
-
-            const countdown = setInterval(() => {
-                secondsRemaining--;
-                skipAdButton.textContent = `Skip Ad (${secondsRemaining}s)`;
-                if (secondsRemaining <= 0) {
-                    clearInterval(countdown);
-                    skipAdButton.disabled = false;
-                    skipAdButton.textContent = "Skip Ad";
-                }
-            }, 1000);
-        });
-
-        // Skip ad and play video
-        skipAdButton.addEventListener('click', () => {
-            adOverlay.style.display = 'none';
-            videoElement.play();
-        });
     </script>
 
 </body>
