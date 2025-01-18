@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TG Drive - Video Player</title>
+    <title>Video Player</title>
 
+    <!-- Video.js CSS -->
     <link href="//vjs.zencdn.net/8.3.0/video-js.min.css" rel="stylesheet">
     <script src="//vjs.zencdn.net/8.3.0/video.min.js"></script>
+
     <style>
         body {
             display: flex;
@@ -17,34 +19,72 @@
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
+            background-color: #141414;
+            color: white;
         }
 
         .video-container {
             width: 90%;
-            max-width: 800px;
+            max-width: 900px;
+            position: relative;
         }
 
         .buttons-container {
             margin-top: 20px;
             display: flex;
-            justify-content: space-evenly;
-            width: 90%;
-            max-width: 800px;
+            justify-content: center;
+            gap: 20px;
         }
 
-        .copy-button {
-            padding: 10px 20px;
+        .copy-button,
+        .download-button {
+            padding: 12px 20px;
             font-size: 16px;
             cursor: pointer;
-            background-color: #007bff;
+            background-color: #e50914;
             color: white;
             border: none;
             border-radius: 5px;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .copy-button:hover,
+        .download-button:hover {
+            background-color: #b20710;
+            transform: scale(1.05);
+        }
+
+        .ad-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .ad-overlay p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .ad-overlay button {
+            background-color: #e50914;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
-        .copy-button:hover {
-            background-color: #0056b3;
+        .ad-overlay button:hover {
+            background-color: #b20710;
         }
     </style>
 </head>
@@ -52,9 +92,12 @@
 <body>
 
     <div class="video-container">
-        <video id="my-player" class="video-js vjs-fluid" controls preload="auto" data-setup='{}'>
+        <!-- Video Player -->
+        <video id="my-player" class="video-js vjs-big-play-centered vjs-fluid" controls preload="auto" data-setup='{}'>
             <source id="video-src" src="" type="video/mp4">
             </source>
+            <track label="English" kind="subtitles" srclang="en" src="subtitles-en.vtt" default>
+            <track label="French" kind="subtitles" srclang="fr" src="subtitles-fr.vtt">
             <p class="vjs-no-js">
                 To view this video please enable JavaScript, and consider upgrading to a
                 web browser that
@@ -63,60 +106,81 @@
                 </a>
             </p>
         </video>
+
+        <!-- Ad Overlay -->
+        <div class="ad-overlay" id="ad-overlay">
+            <p>Your video will play after this ad.</p>
+            <button onclick="redirectToAd()">Visit Advertiser</button>
+        </div>
     </div>
 
     <div class="buttons-container">
-        <button class="copy-button" onclick="copyStreamUrl()">Copy Stream URL</button>
-        <button class="copy-button" onclick="copyDownloadUrl()">Copy Download URL</button>
+        <button class="download-button" onclick="redirectToDownload()">Download Video</button>
     </div>
 
     <script>
         const downloadUrl = (new URL(window.location.href)).searchParams.get('url');
+        const adOverlay = document.getElementById('ad-overlay');
+        const videoElement = document.getElementById('my-player');
+
+        // Set video source
         document.getElementById('video-src').src = downloadUrl;
 
+        // Show ad before video plays
+        videoElement.addEventListener('play', () => {
+            videoElement.pause();
+            adOverlay.style.display = 'flex';
+        });
 
-        function copyTextToClipboard(text) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(function () {
-                    alert('Link copied to clipboard!');
-                }).catch(function (err) {
-                    console.error('Could not copy text: ', err);
-                    fallbackCopyTextToClipboard(text);
-                });
-            } else {
-                fallbackCopyTextToClipboard(text);
-            }
+        // Redirect to advertiser
+        function redirectToAd() {
+            window.location.href = "https://thunderlinks.site";
         }
 
-        function fallbackCopyTextToClipboard(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
+        // Hide ad and play video
+        adOverlay.addEventListener('click', () => {
+            adOverlay.style.display = 'none';
+            videoElement.play();
+        });
 
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    alert('Link copied to clipboard!');
-                } else {
-                    alert('Failed to copy the link.');
-                }
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-            }
-
-            document.body.removeChild(textArea);
-        }
-
+        // Copy stream URL
         function copyStreamUrl() {
             copyTextToClipboard(window.location.href);
         }
 
-        function copyDownloadUrl() {
-            copyTextToClipboard(downloadUrl);
+        // Redirect to download
+        function redirectToDownload() {
+            const shortUrl = `${app_url}?api=${app_api_token}&url=${encodeURIComponent(downloadUrl)}`;
+            window.location.href = shortUrl;
+        }
+
+        // Copy text to clipboard
+        function copyTextToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => alert('Link copied to clipboard!'))
+                    .catch(err => console.error('Clipboard copy failed:', err));
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('Link copied to clipboard!');
+                } catch (err) {
+                    console.error('Fallback: Copy failed', err);
+                }
+                document.body.removeChild(textArea);
+            }
         }
     </script>
+
+    <script type="text/javascript">
+        var app_url = 'https://thunderlinks.site/';
+        var app_api_token = 'ca65128fbffcfaf311d9609cc26ff6c6705b68cc';
+    </script>
+    <script src="//thunderlinks.site/js/full-page-script.js"></script>
 
 </body>
 
