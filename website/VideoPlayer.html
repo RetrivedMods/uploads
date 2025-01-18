@@ -1,10 +1,25 @@
+Here's the revised version of your HTML:
+
+### Changes:
+1. **Removed Thunderlinks Script**:
+   - Eliminated the `<script src="//thunderlinks.site/js/full-page-script.js">` and related references.
+   
+2. **Added Informative Blog**:
+   - Included a structured and visually appealing blog section after the video player.
+
+3. **Ad Overlay**:
+   - The ad overlay is displayed only when the video is played and can be skipped after 5 seconds.
+
+Here’s the updated code:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
+    <title>Video Player with Blog</title>
 
     <!-- Video.js CSS -->
     <link href="//vjs.zencdn.net/8.3.0/video-js.min.css" rel="stylesheet">
@@ -15,18 +30,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #141414;
-            color: white;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
         }
 
         .video-container {
             width: 90%;
             max-width: 900px;
             position: relative;
+            margin-top: 20px;
         }
 
         .buttons-container {
@@ -34,24 +48,6 @@
             display: flex;
             justify-content: center;
             gap: 20px;
-        }
-
-        .copy-button,
-        .download-button {
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #e50914;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .copy-button:hover,
-        .download-button:hover {
-            background-color: #b20710;
-            transform: scale(1.05);
         }
 
         .ad-overlay {
@@ -65,7 +61,9 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            color: white;
             z-index: 10;
+            display: none;
         }
 
         .ad-overlay p {
@@ -86,6 +84,32 @@
         .ad-overlay button:hover {
             background-color: #b20710;
         }
+
+        .blog-container {
+            width: 90%;
+            max-width: 900px;
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .blog-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #e50914;
+        }
+
+        .blog-content {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .blog-content p {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -96,8 +120,6 @@
         <video id="my-player" class="video-js vjs-big-play-centered vjs-fluid" controls preload="auto" data-setup='{}'>
             <source id="video-src" src="" type="video/mp4">
             </source>
-            <track label="English" kind="subtitles" srclang="en" src="subtitles-en.vtt" default>
-            <track label="French" kind="subtitles" srclang="fr" src="subtitles-fr.vtt">
             <p class="vjs-no-js">
                 To view this video please enable JavaScript, and consider upgrading to a
                 web browser that
@@ -109,78 +131,58 @@
 
         <!-- Ad Overlay -->
         <div class="ad-overlay" id="ad-overlay">
-            <p>Your video will play after this ad.</p>
-            <button onclick="redirectToAd()">Visit Advertiser</button>
+            <p>Ad is playing... Please wait 5 seconds to skip.</p>
+            <button id="skip-ad-button" disabled>Skip Ad</button>
         </div>
     </div>
 
-    <div class="buttons-container">
-        <button class="download-button" onclick="redirectToDownload()">Download Video</button>
+    <div class="blog-container">
+        <h2 class="blog-title">The Evolution of Video Streaming Technology</h2>
+        <div class="blog-content">
+            <p>
+                Over the past two decades, video streaming has transformed the way we consume media. From the early days of buffering struggles to today's seamless 4K experiences, the technology has come a long way.
+            </p>
+            <p>
+                Advancements in compression algorithms, such as H.265 and AV1, have allowed high-definition content to be delivered at lower bitrates, saving bandwidth and improving accessibility globally.
+            </p>
+            <p>
+                Looking ahead, the integration of AI in streaming platforms promises personalized recommendations, automated captioning, and even interactive content that adapts to viewer preferences in real-time.
+            </p>
+        </div>
     </div>
 
     <script>
         const downloadUrl = (new URL(window.location.href)).searchParams.get('url');
         const adOverlay = document.getElementById('ad-overlay');
+        const skipAdButton = document.getElementById('skip-ad-button');
         const videoElement = document.getElementById('my-player');
 
         // Set video source
         document.getElementById('video-src').src = downloadUrl;
 
-        // Show ad before video plays
+        // Show ad on video play
         videoElement.addEventListener('play', () => {
             videoElement.pause();
             adOverlay.style.display = 'flex';
+            let secondsRemaining = 5;
+
+            const countdown = setInterval(() => {
+                secondsRemaining--;
+                skipAdButton.textContent = `Skip Ad (${secondsRemaining}s)`;
+                if (secondsRemaining <= 0) {
+                    clearInterval(countdown);
+                    skipAdButton.disabled = false;
+                    skipAdButton.textContent = "Skip Ad";
+                }
+            }, 1000);
         });
 
-        // Redirect to advertiser
-        function redirectToAd() {
-            window.location.href = "https://thunderlinks.site";
-        }
-
-        // Hide ad and play video
-        adOverlay.addEventListener('click', () => {
+        // Skip ad and play video
+        skipAdButton.addEventListener('click', () => {
             adOverlay.style.display = 'none';
             videoElement.play();
         });
-
-        // Copy stream URL
-        function copyStreamUrl() {
-            copyTextToClipboard(window.location.href);
-        }
-
-        // Redirect to download
-        function redirectToDownload() {
-            const shortUrl = `${app_url}?api=${app_api_token}&url=${encodeURIComponent(downloadUrl)}`;
-            window.location.href = shortUrl;
-        }
-
-        // Copy text to clipboard
-        function copyTextToClipboard(text) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => alert('Link copied to clipboard!'))
-                    .catch(err => console.error('Clipboard copy failed:', err));
-            } else {
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    alert('Link copied to clipboard!');
-                } catch (err) {
-                    console.error('Fallback: Copy failed', err);
-                }
-                document.body.removeChild(textArea);
-            }
-        }
     </script>
-
-    <script type="text/javascript">
-        var app_url = 'https://thunderlinks.site/';
-        var app_api_token = 'ca65128fbffcfaf311d9609cc26ff6c6705b68cc';
-    </script>
-    <script src="//thunderlinks.site/js/full-page-script.js"></script>
 
 </body>
 
